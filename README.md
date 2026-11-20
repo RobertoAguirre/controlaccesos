@@ -27,53 +27,36 @@ npm run dev
 - API: http://localhost:4000/api/health  
 - Login seed: `admin@controlaccesos.mx` / `Admin123!`
 
-## Publicar en Vercel (monorepo)
+## Publicar en Vercel (Services — un proyecto)
 
-Vercel no mantiene WebSockets persistentes. Por eso el despliegue recomendado es:
+Un solo proyecto Vercel con dos services definidos en `vercel.json`:
 
-| Proyecto Vercel | Root Directory | Qué hace |
-|-----------------|----------------|----------|
-| **web** | `apps/web` (o raíz con `vercel.json`) | SPA Svelte |
-| **api** | `apps/api` | REST serverless (móviles vía HTTP) |
+| Service | Root | Público | Path |
+|---------|------|---------|------|
+| `api` | `apps/api` | sí | `/api/*` |
+| `web` | `apps/web` | sí | `/*` (catch-all) |
 
-### 1) Proyecto API
+No hay **bindings** internos: el web es SPA (navegador) y habla por same-origin `/api/...`; Flutter también usa la URL pública `/api/...`.
 
-1. En Vercel → *Add New Project* → este repo  
-2. **Root Directory:** `apps/api`  
-3. Variables de entorno:
+### Deploy
+
+1. Importa el repo en Vercel (root del monorepo).  
+2. Variables de entorno del proyecto:
 
 ```env
 MONGODB_URI=mongodb+srv://...
 JWT_SECRET=secreto_largo
 JWT_EXPIRES_IN=7d
-CORS_ORIGIN=https://tu-frontend.vercel.app
+CORS_ORIGIN=*
 CORS_VERCEL_PREVIEWS=true
 TZ=America/Mexico_City
 NODE_ENV=production
 ```
 
-4. Deploy → anota la URL, ej. `https://control-accesos-api.vercel.app`
+3. No definas `VITE_API_URL` (el cliente usa `/api` relativo).  
+4. Local con services: `vercel dev` (inyecta bindings si los hubiera).
 
-### 2) Proyecto Web
-
-1. Otro proyecto Vercel del mismo repo  
-2. **Root Directory:** vacío (usa `vercel.json` de la raíz) **o** `apps/web`  
-3. Variables de entorno **de build**:
-
-```env
-VITE_API_URL=https://control-accesos-api.vercel.app
-```
-
-4. Si más adelante tienes API con sockets (Railway/Render):
-
-```env
-VITE_SOCKET_URL=https://tu-api-node.ejemplo.com
-```
-
-### 3) CORS
-
-En la API, `CORS_ORIGIN` debe incluir la URL del frontend.  
-Los clientes **móviles** (sin header `Origin`) ya están permitidos.
+**Nota:** Socket.io no corre en el service `api` serverless. Flutter → `POST /api/tracking/ubicacion`. Para sockets, despliega `apps/api` con el Dockerfile en un host Node persistente.
 
 ## Móviles (Flutter) — API accesible
 

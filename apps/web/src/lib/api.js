@@ -1,3 +1,4 @@
+// Vacío = same-origin (/api/...), correcto en Vercel Services con rewrite a "api".
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
 function getToken() {

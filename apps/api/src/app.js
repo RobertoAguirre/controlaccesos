@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import { connectDB } from './config/db.js';
 import { createCorsOptions } from './config/cors.js';
 import { errorHandler, notFound } from './middleware/errorHandler.js';
 
@@ -10,7 +11,7 @@ import eventosRoutes from './routes/eventos.js';
 import trackingRoutes from './routes/tracking.js';
 
 /**
- * App Express compartida (servidor Node + Vercel serverless).
+ * App Express compartida (servidor Node + Vercel Services).
  * `io` es opcional: en Vercel no hay Socket.io persistente.
  */
 export function createApp(io = null) {
@@ -18,6 +19,15 @@ export function createApp(io = null) {
 
   app.set('trust proxy', 1);
   if (io) app.set('io', io);
+
+  app.use(async (_req, _res, next) => {
+    try {
+      await connectDB();
+      next();
+    } catch (err) {
+      next(err);
+    }
+  });
 
   app.use(cors(createCorsOptions()));
   app.use(express.json({ limit: '1mb' }));
