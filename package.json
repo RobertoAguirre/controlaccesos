@@ -1,0 +1,27 @@
+{
+  "name": "control-accesos",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sistema de control de accesos - monorepo",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n api,web -c blue,green \"npm run dev -w @control-accesos/api\" \"npm run dev -w @control-accesos/web\"",
+    "dev:api": "npm run dev -w @control-accesos/api",
+    "dev:web": "npm run dev -w @control-accesos/web",
+    "start:api": "npm run start -w @control-accesos/api",
+    "build": "npm run build:web",
+    "build:web": "npm run build -w @control-accesos/web",
+    "seed": "npm run seed -w @control-accesos/api"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "allowScripts": {
+    "esbuild@0.25.12": true
+  }
+}
